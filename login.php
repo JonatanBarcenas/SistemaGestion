@@ -1,6 +1,7 @@
 <?php
 //login.php
-session_start(); 
+require_once 'config/session_config.php';
+initSession();
 
 include 'conexion.php'; 
 $error = "";
@@ -38,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>

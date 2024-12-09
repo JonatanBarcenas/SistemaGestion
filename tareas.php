@@ -1,13 +1,7 @@
 <?php
 //tareas.php
-    session_start(); 
-
-    if (!isset($_SESSION['usuario_id'])) {
-        header("Location:login.php");
-        exit();
-    }
-
-    $usuario_id = $_SESSION['usuario_id']; 
+require_once 'config/session_config.php';
+checkLogin();
 
     include 'conexion.php';
 

@@ -1,0 +1,6 @@
+[2024-12-09 17:01:33] Intentando eliminar pedido
+Data: Array
+(
+    [id] => 34
+)
+

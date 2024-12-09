@@ -1,60 +1,46 @@
 <?php
-include 'conexion.php';
-session_start();
+header('Content-Type: application/json');
 
-if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['error' => 'No autorizado']);
-    exit;
-}
+require_once 'config/session_config.php';
+require_once 'conexion.php';
+checkLogin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id = $_POST['id'];
     
     try {
         $cnn = conectar();
+        $cnn->begin_transaction();
         
-        // Verificar permisos
-        $sql_permisos = "SELECT r.nombre as rol FROM usuario u 
-                        INNER JOIN rol r ON u.rol_id = r.id_rol 
-                        WHERE u.id_usuario = ?";
-        $stmt = $cnn->prepare($sql_permisos);
-        $stmt->bind_param("i", $_SESSION['usuario_id']);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $usuario = $result->fetch_assoc();
-        
-        if ($usuario['rol'] !== 'Administrador' && $usuario['rol'] !== 'jefe') {
-            echo json_encode(['error' => 'No tienes permisos para eliminar pedidos']);
-            exit;
-        }
-        
-        // Eliminar comentarios asociados
-        $sql_comentarios = "DELETE FROM comentario WHERE pedido_id = ?";
-        $stmt = $cnn->prepare($sql_comentarios);
+        // 1. Eliminar comentarios relacionados
+        $sql = "DELETE FROM comentario WHERE pedido_id = ?";
+        $stmt = $cnn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         
-        // Eliminar archivos asociados
-        $sql_archivos = "DELETE FROM archivo WHERE pedido_id = ?";
-        $stmt = $cnn->prepare($sql_archivos);
+        // 2. Eliminar archivos relacionados
+        $sql = "DELETE FROM archivo WHERE pedido_id = ?";
+        $stmt = $cnn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         
-        // Eliminar el pedido
-        $sql_pedido = "DELETE FROM pedido WHERE id_pedido = ?";
-        $stmt = $cnn->prepare($sql_pedido);
+        // 3. Eliminar el pedido
+        $sql = "DELETE FROM pedido WHERE id_pedido = ?";
+        $stmt = $cnn->prepare($sql);
         $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
+            $cnn->commit();
             echo json_encode(['success' => true]);
         } else {
-            echo json_encode(['error' => 'Error al eliminar el pedido']);
+            throw new Exception($cnn->error);
         }
         
     } catch (Exception $e) {
-        echo json_encode(['error' => $e->getMessage()]);
+        $cnn->rollback();
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
 } else {
-    echo json_encode(['error' => 'Método no permitido']);
+    echo json_encode(['success' => false, 'error' => 'Método no permitido o ID no proporcionado']);
 }
 ?>
