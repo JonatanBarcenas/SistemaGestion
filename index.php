@@ -1,4 +1,5 @@
 <?php
+//index.php
 session_start();
     include 'conexion.php';
 
@@ -36,6 +37,14 @@ session_start();
                             <td> 
                                 <button class='".$clasePrioridad."'>
                                     ".$prioridad."
+                                </button>
+                            </td>
+                            <td>
+                                <button onclick='editarPedido(".$resultados['id_pedido'].")' class='btn-editar'>
+                                    ✏️
+                                </button>
+                                <button onclick='eliminarPedido(".$resultados['id_pedido'].")' class='btn-eliminar'>
+                                    🗑️
                                 </button>
                             </td>
                         </tr>";
@@ -206,6 +215,59 @@ session_start();
             </section>
         </main>
     </div>
+    <script>
+    async function eliminarPedido(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar este pedido?')) {
+            try {
+                const response = await fetch('delete_pedido.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id=${id}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Pedido eliminado correctamente');
+                    location.reload();
+                } else {
+                    alert(data.error || 'Error al eliminar el pedido');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud');
+            }
+        }
+    }
+
+    async function editarPedido(id) {
+        try {
+            const response = await fetch(`edit_pedido.php?id=${id}`);
+            const pedido = await response.json();
+            
+            if (pedido.error) {
+                alert(pedido.error);
+                return;
+            }
+            
+            // Rellenar el modal con los datos del pedido
+            document.querySelector('input[name="titulo"]').value = pedido.titulo;
+            document.querySelector('textarea[name="descripcion"]').value = pedido.descripcion;
+            document.querySelector('input[name="fecha-entrega"]').value = pedido.fecha_entrega.split(' ')[0];
+            document.querySelector('#responsable').value = pedido.responsable;
+            document.querySelector('#responsable-id').value = pedido.usuario_id;
+            
+            // Mostrar el modal
+            document.getElementById('modal-container').classList.add('active');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al cargar los datos del pedido');
+        }
+    }
+</script>
 </body>
 </html>
 

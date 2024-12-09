@@ -1,4 +1,5 @@
 <?php
+//search_responsable.php
 include 'conexion.php';
 
 if (isset($_GET['query'])) {

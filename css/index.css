@@ -1,3 +1,21 @@
+/* index.css */
+
+.btn-editar,
+.btn-eliminar {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background: none;
+    font-size: 1.2em;
+}
+
+.btn-editar:hover,
+.btn-eliminar:hover {
+    background-color: #444;
+}
+
 * {
     margin: 0;
     padding: 0;
