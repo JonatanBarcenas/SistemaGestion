@@ -27,6 +27,19 @@ checkLogin();
     } catch (PDOException $e) {
         echo "Error en la conexión: " . $e->getMessage();
     }
+
+    $sql = "SELECT * FROM alerta 
+        WHERE estado = 'no_leida' 
+        ORDER BY fecha_generacion DESC";
+$result = $cnn->query($sql);
+
+$alertas = "";
+while($row = $result->fetch_assoc()) {
+    $alertas .= "<div class='alerta {$row['tipo']}'>
+                    <p>{$row['mensaje']}</p>
+                    <button onclick='marcarLeida({$row['id_alerta']})'>Marcar como leída</button>
+                 </div>";
+}
 ?>
 
 
