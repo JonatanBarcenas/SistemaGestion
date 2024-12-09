@@ -4,6 +4,7 @@ require_once 'config/session_config.php';
 checkLogin();
 
     include 'conexion.php';
+    include 'check_alerts.php';
 
     try {
         $cnn = conectar();
@@ -16,14 +17,19 @@ checkLogin();
                 WHERE p.usuario_id = ?";
         
         $stmt = $cnn->prepare($sql);
+        $usuario_id = $_SESSION['usuario_id'];
         $stmt->bind_param("i", $usuario_id);
         $stmt->execute();
         $result = $stmt->get_result();
+
 
         $tareas = [];
         while ($row = $result->fetch_assoc()) {
             $tareas[] = $row;
         }
+
+        checkDates();
+        
     } catch (PDOException $e) {
         echo "Error en la conexión: " . $e->getMessage();
     }
@@ -95,7 +101,28 @@ while($row = $result->fetch_assoc()) {
                         <div class="description" id="task-description"></div>
                     </div>
                 </div>
+                
             </section>
+            <div class="alerts-wrapper">
+                <section class="project-section alertas">
+                    <div>
+                        <h3>Vencidos</h3>
+                        <div id="alertas">
+                            <?php echo $alertas; ?>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="project-section alertas">
+                    <div>
+                        <h3>Proximos</h3>
+                        <div id="alertas">
+                            <?php echo $alertas; ?>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
         </main>
     </div>
 
