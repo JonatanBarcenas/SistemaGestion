@@ -140,3 +140,41 @@ border-radius: 10px;
     flex: 1;
     margin: 0 !important; /* Override inline styles */
 }
+
+.alertas-container {
+    min-height: 200px;
+    margin-bottom: 15px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+}
+
+.prev-btn, .next-btn {
+    padding: 5px 15px;
+    background: #444;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+}
+
+.prev-btn:hover, .next-btn:hover {
+    background: #555;
+}
+
+.leer-btn {
+    padding: 5px 15px;
+    background: #444;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+}
+
+.leer-btn:hover {
+    background: #555;
+}

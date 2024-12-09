@@ -1,6 +1,30 @@
 <?php
 require_once 'conexion.php';
 
+function getAlertas($tipo, $offset, $limit) {
+    $cnn = conectar();
+    
+    $sql = "SELECT a.*, p.titulo
+            FROM alerta a
+            LEFT JOIN pedido p ON a.pedido_id = p.id_pedido
+            WHERE a.estado = 'no_leida' 
+            AND a.tipo = ?
+            ORDER BY a.fecha_generacion DESC
+            LIMIT ?, ?";
+            
+    $stmt = $cnn->prepare($sql);
+    $stmt->bind_param("sii", $tipo, $offset, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $alertas = [];
+    while($row = $result->fetch_assoc()) {
+        $alertas[] = $row;
+    }
+    
+    return $alertas;
+}
+
 function checkDates() {
     $cnn = conectar();
     
@@ -18,7 +42,6 @@ function checkDates() {
     $result = $cnn->query($sql);
     
     while($row = $result->fetch_assoc()) {
-        // Generar alerta
         $mensaje = "El pedido '{$row['titulo']}' asignado a {$row['responsable']} vence el {$row['fecha_entrega']}";
         
         $insertSql = "INSERT INTO alerta (pedido_id, tipo, mensaje, fecha_generacion, estado) 
@@ -51,7 +74,4 @@ function checkDates() {
         $stmt->execute();
     }
 }
-
-// Ejecutar verificación
-checkDates();
 ?>
