@@ -1,0 +1,129 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #1e1e1e;
+    color: #fff;
+}
+.container {
+    display: flex;
+    height: 100vh;
+}
+.sidebar {
+    width: 250px;
+    background-color: #292929;
+    padding: 20px;
+}
+.sidebar h3 {
+    margin-bottom: 20px;
+}
+.sidebar .menu {
+    list-style: none;
+    padding: 0;
+}
+.sidebar .menu li {
+    margin: 10px 0;
+}
+.sidebar .projects {
+    margin-top: 30px;
+}
+.sidebar .projects .project {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+.sidebar .projects .project .dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.header {
+    padding: 10px 20px;
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header input {
+    padding: 5px;
+    border: none;
+    border-radius: 3px;
+}
+.main {
+    display: flex;
+    flex: 1;
+}
+
+.main-content {
+flex: 1;
+padding: 20px;
+}
+
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.search-bar {
+padding: 10px;
+width: 60%;
+border: none;
+border-radius: 5px;
+}
+
+.user-icon {
+font-size: 24px;
+}
+.project-section {
+    display: flex;
+background-color: #333;
+padding: 20px;
+border-radius: 10px;
+}
+.tarea{
+    display: none;
+}
+
+.task-list {
+    width: 30%;
+    border-right: 1px solid #444;
+    padding: 20px;
+}
+.task-list ul {
+    list-style: none;
+    padding: 0;
+}
+.task-list ul li {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #151515;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.task-details {
+    flex: 1;
+    padding: 20px;
+}
+.task-details h2 {
+    margin-bottom: 20px;
+}
+.task-details .info {
+    margin-bottom: 10px;
+}
+.task-details .info span {
+    font-weight: bold;
+}
+.task-details .description {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #151515;
+    border-radius: 5px;
+    min-height: 150px;
+}

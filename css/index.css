@@ -1,0 +1,294 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+
+.sidebar {
+    width: 250px;
+    background-color: #292929;
+    padding: 20px;
+}
+.sidebar h3 {
+    margin-bottom: 20px;
+}
+.sidebar .menu {
+    list-style: none;
+    padding: 0;
+}
+.sidebar .menu li {
+    margin: 10px 0;
+}
+.sidebar .projects {
+    margin-top: 30px;
+}
+.sidebar .projects .project {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+.sidebar .projects .project .dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+/* .sidebar {
+    width: 250px;
+    background-color: #1d1d1d;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.menu-icon {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.menu p {
+    margin: 10px 0;
+}
+
+.projects h3 {
+    margin-bottom: 10px;
+}
+
+.add-project {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.projects ul {
+    list-style: none;
+}
+
+.projects li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.projects li.active {
+    background-color: #444;
+    border-radius: 5px;
+} */
+
+/* Main content */
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    padding: 10px;
+    width: 60%;
+    border: none;
+    border-radius: 5px;
+}
+
+.user-icon {
+    font-size: 24px;
+}
+
+.project-section {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.add-task {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.tasks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tasks-table th, .tasks-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #555;
+}
+
+.low-priority {
+    border: none;
+    width: 70px;
+    height: 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #00ff00;
+    color: #ffffff;
+}
+
+.medium-priority {
+    border: none;
+    width: 70px;
+    height: 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #d9d900;
+    color: #ffffff;
+}
+
+.high-priority {
+    border: none;
+    width: 70px;
+    height: 25px;
+    border-radius: 5px;
+    cursor: pointer;
+
+    background-color: #ff0000;
+    color: #ffffff;
+}
+
+
+/* MODAl */
+
+
+/* Modal Styles */
+.modal-container {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.499);
+    position: fixed;
+}
+
+.modal-container.active {
+    display: flex; 
+}
+
+.modal {
+    background-color: #000;
+    border-radius: 10px;
+    width: 400px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.modal-title {
+    margin: 0;
+    margin-bottom: 20px;
+    font-size: 24px;
+    text-align: center;
+    color: #fff;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+}
+
+textarea {
+    resize: none;
+}
+
+.icon {
+    margin-right: 8px;
+}
+
+.project-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.project-color {
+    width: 15px;
+    height: 15px;
+    background-color: yellow;
+    border-radius: 50%;
+}
+
+.project-name {
+    font-size: 14px;
+}
+
+/* Button Styles */
+.btn-agregar {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #555;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-agregar:hover {
+    background-color: #777;
+}
+
+
+.autocomplete-results {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #000000;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    z-index: 10;
+    /* width: 100%; */
+}
+
+.autocomplete-results li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.autocomplete-results li:hover {
+    background-color: #181818;
+}
