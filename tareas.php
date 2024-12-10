@@ -9,6 +9,7 @@ $pagina_vencidas = isset($_GET['pagina']) && $_GET['tipo'] === 'atraso' ? (int)$
 $pagina_proximas = isset($_GET['pagina']) && $_GET['tipo'] === 'fecha' ? (int)$_GET['pagina'] : 1;
 $limite = 2;
 
+
 function getTotalAlertas($tipo) {
     $cnn = conectar();
     $sql = "SELECT COUNT(*) as total FROM alerta WHERE estado = 'no_leida' AND tipo = ?";
@@ -65,7 +66,7 @@ function renderAlertas($alertas) {
         $html .= "<div class='alerta {$alerta['tipo']}'>
                     <p>{$alerta['mensaje']}</p>
                     <button class='leer-btn' onclick='marcarLeida({$alerta['id_alerta']})'>Marcar como leída</button>
-                 </div>";
+                </div>";
     }
     return $html;
 }
