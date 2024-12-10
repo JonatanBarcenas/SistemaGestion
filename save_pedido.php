@@ -26,7 +26,8 @@ try {
     $usuario_id = $_POST['responsable-id'];
     $prioridad_id = $_POST['prioridad'];
     $estado_id = 1; // Estado inicial
-    $cliente_id = 1; // Cliente por defecto, ajustar según necesidad
+    $proyecto_id = isset($_POST['proyecto_id']) ? $_POST['proyecto_id'] : null;
+    $cliente_id = $_POST['cliente_id']; // Cliente por defecto, ajustar según necesidad
     
     // Insertar el pedido
     $sql = "INSERT INTO pedido (
@@ -37,18 +38,20 @@ try {
                 estado_id, 
                 prioridad_id, 
                 cliente_id, 
-                usuario_id
-            ) VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)";
+                usuario_id,
+                proyecto_id
+            ) VALUES (?, ?, NOW(), ?, ?, ?, ?, ?,?)";
             
     $stmt = $cnn->prepare($sql);
-    $stmt->bind_param("sssiiis", 
+    $stmt->bind_param("sssiiiii", 
         $titulo, 
         $descripcion, 
         $fecha_entrega,
         $estado_id,
         $prioridad_id,
         $cliente_id,
-        $usuario_id
+        $usuario_id,
+        $proyecto_id
     );
     
     if ($stmt->execute()) {

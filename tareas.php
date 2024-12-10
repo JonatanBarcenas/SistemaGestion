@@ -4,6 +4,33 @@ checkLogin();
 include 'conexion.php';
 include 'check_alerts.php';
 
+$cnn = conectar();
+
+// Obtener el proyecto_id de la URL o usar un valor predeterminado
+$proyecto_id = isset($_GET['proyecto_id']) ? $_GET['proyecto_id'] : 1;
+
+// Obtener información del proyecto actual
+$sql_proyecto_actual = "SELECT nombre FROM proyecto WHERE id_proyecto = ?";
+$stmt = $cnn->prepare($sql_proyecto_actual);
+$stmt->bind_param("i", $proyecto_id);
+$stmt->execute();
+$proyecto_actual = $stmt->get_result()->fetch_assoc();
+
+$sql_usuarios = "SELECT id_usuario, nombre FROM usuario ORDER BY nombre";
+$result_usuarios = $cnn->query($sql_usuarios);
+$usuarios = [];
+while($usuario = $result_usuarios->fetch_assoc()) {
+    $usuarios[] = $usuario;
+}
+
+// Obtener lista de proyectos
+$sql_proyectos = "SELECT id_proyecto, nombre, estado_id FROM proyecto ORDER BY fecha_inicio DESC";
+$result_proyectos = $cnn->query($sql_proyectos);
+$proyectos = [];
+while($proyecto = $result_proyectos->fetch_assoc()) {
+    $proyectos[] = $proyecto;
+}
+
 // Function to update task state
 function updateTaskState($pedido_id, $estado_id) {
     try {
@@ -108,22 +135,60 @@ function renderAlertas($alertas) {
     <link rel="stylesheet" href="css/tareas.css">
 </head>
 <body>
+    <!-- Modal de Proyecto -->
+    <div class="modal-container" id="modal-proyecto">
+        <div class="modal">
+            <form method="post" id="proyectoForm">
+                <input type="text" name="nombre_proyecto" placeholder="Nombre del Proyecto" class="modal-title" required>
+                
+                <div class="form-group">
+                    <label for="cliente_proyecto"><span class="icon">🏢</span> Cliente</label>
+                    <select class="combo" name="cliente_id" id="cliente_proyecto" required>
+                        <?php
+                        $sql_clientes = "SELECT id_cliente, nombre FROM cliente ORDER BY nombre";
+                        $result_clientes = $cnn->query($sql_clientes);
+                        while($cliente = $result_clientes->fetch_assoc()) {
+                            echo "<option value='".$cliente['id_cliente']."'>".$cliente['nombre']."</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion_proyecto">Descripción</label>
+                    <textarea id="descripcion_proyecto" name="descripcion" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha_fin"><span class="icon">📅</span> Fecha de Finalización</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" required>
+                </div>
+
+                <button type="submit" class="btn-agregar">Crear Proyecto</button>
+            </form>
+        </div>
+    </div>
     <div class="container">
-        <!-- Sidebar -->
+         <!-- Sidebar -->
         <div class="sidebar">
             <ul class="menu">
                 <li onclick="location.href='tareas.php'">Notificaciones</li>
                 <li onclick="location.href='informes.php'">Informes</li>
             </ul>
             <div class="projects">
-                <h3>Proyectos</h3>
-                <div class="project">
-                    <div class="dot" style="background-color: yellow;"></div>
-                    <span onclick="location.href='index.php'">Proyecto 1</span>
+                <div class="alineacion">
+                    <h3>Proyectos</h3>
+                    <button class="add-project-btn" style="display: none;" onclick="mostrarModalProyecto()">+</button>
                 </div>
-                <div class="project">
-                    <div class="dot" style="background-color: cyan;"></div>
-                    <span>Proyecto 2</span>
+                
+                <div class="projects-list">
+                    <?php foreach($proyectos as $proyecto): ?>
+                        <div class="project <?php echo $proyecto['id_proyecto'] == $proyecto_id ? 'active' : ''; ?>" 
+                             onclick="cambiarProyecto(<?php echo $proyecto['id_proyecto']; ?>)">
+                            <div class="dot" style="background-color: #007bff;"></div>
+                            <span><?php echo htmlspecialchars($proyecto['nombre']); ?></span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
@@ -349,6 +414,14 @@ function renderAlertas($alertas) {
             console.error('Error al marcar como leída:', error);
         }
     }
+
+    function mostrarModalProyecto() {
+            document.getElementById('modal-proyecto').classList.add('active');
+        }
+
+        function cambiarProyecto(proyectoId) {
+            window.location.href = `index.php?proyecto_id=${proyectoId}`;
+        }
     </script>
 </body>
 </html>
