@@ -93,7 +93,7 @@ function renderAlertas($alertas) {
         $html .= "<div class='alerta {$alerta['tipo']}'>
                     <p>{$alerta['mensaje']}</p>
                     <button class='leer-btn' onclick='marcarLeida({$alerta['id_alerta']})'>Marcar como leída</button>
-                 </div>";
+                </div>";
     }
     return $html;
 }
