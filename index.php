@@ -139,7 +139,7 @@ try {
                 <input type="text" name="titulo" placeholder="INGRESE EL NOMBRE" class="modal-title" required>
                 <div class="form-group">
                     <label for="responsable"><span class="icon">👤</span> Responsable</label>
-                    <select id="responsable" name="responsable-id" required>
+                    <select id="responsable" class="combo" name="responsable-id" required>
                         <option value="">Seleccione un responsable</option>
                         <?php foreach ($usuarios as $usuario): ?>
                             <option value="<?= $usuario['id_usuario'] ?>"><?= $usuario['nombre'] ?></option>
@@ -388,33 +388,61 @@ try {
         }
 
         async function editarPedido(id) {
-            try {
-                const response = await fetch(`get_pedido.php?id=${id}`);
-                const result = await response.json();
-                
-                if (!result.success) {
-                    throw new Error(result.error || 'Error al obtener los datos del pedido');
-                }
-                
-                const pedido = result.data;
-                
-                document.getElementById('id_pedido').value = pedido.id_pedido;
-                document.querySelector('input[name="titulo"]').value = pedido.titulo;
-                document.querySelector('textarea[name="descripcion"]').value = pedido.descripcion;
-                document.querySelector('input[name="fecha-entrega"]').value = pedido.fecha_entrega;
-                document.querySelector('#responsable').value = pedido.responsable;
-                document.querySelector('#responsable-id').value = pedido.usuario_id;
-                document.querySelector('#prioridad').value = pedido.prioridad_id;
-                document.querySelector('#estado').value = pedido.estado_id;
-                
-                document.getElementById('btn-submit').textContent = 'Actualizar';
-                document.getElementById('modal-container').classList.add('active');
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al cargar los datos del pedido: ' + error.message);
+    try {
+        const response = await fetch(`get_pedido.php?id=${id}`);
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Error al obtener los datos del pedido');
+        }
+        
+        const pedido = result.data;
+        
+        // Get all form elements
+        const elements = {
+            id_pedido: document.getElementById('id_pedido'),
+            titulo: document.querySelector('input[name="titulo"]'),
+            descripcion: document.querySelector('textarea[name="descripcion"]'),
+            fecha_entrega: document.querySelector('input[name="fecha-entrega"]'),
+            responsable: document.querySelector('#responsable'),
+            prioridad: document.querySelector('#prioridad'),
+            estado: document.querySelector('#estado')
+        };
+
+        // Check if all elements exist
+        for (const [key, element] of Object.entries(elements)) {
+            if (!element) {
+                throw new Error(`No se encontró el elemento ${key}`);
             }
         }
+
+        // Set values only if elements exist
+        elements.id_pedido.value = pedido.id_pedido;
+        elements.titulo.value = pedido.titulo;
+        elements.descripcion.value = pedido.descripcion;
+        elements.fecha_entrega.value = pedido.fecha_entrega;
+        elements.responsable.value = pedido.usuario_id;
+        elements.prioridad.value = pedido.prioridad_id;
+        elements.estado.value = pedido.estado_id;
+        
+        // Update button text and show modal
+        const submitBtn = document.getElementById('btn-submit');
+        if (submitBtn) {
+            submitBtn.textContent = 'Actualizar';
+        }
+
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) {
+            modalContainer.classList.add('active');
+        } else {
+            throw new Error('No se encontró el modal');
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al cargar los datos del pedido: ' + error.message);
+    }
+}
 
         async function eliminarPedido(id) {
             if (!confirm('¿Está seguro de que desea eliminar este pedido?')) {

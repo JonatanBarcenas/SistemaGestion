@@ -233,7 +233,7 @@ $dashboardData = getDashboardData($cnn);
             <header class="header">
                 <h1>Panel de Informes</h1>
                 <div class="header-controls">
-                    <select id="periodoSelect" class="form-control">
+                    <select id="periodoSelect" style="display: none;"+ class="form-control">
                         <option value="mes">Este Mes</option>
                         <option value="trimestre">Último Trimestre</option>
                         <option value="semestre">Último Semestre</option>

@@ -327,12 +327,13 @@ function renderAlertas($alertas) {
         
         try {
             const response = await fetch(`get_alertas_ajax.php?tipo=${tipo}&pagina=${pagina}`);
-            
+            console.log("response "+response);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
+            consolo.log("data "+data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Error desconocido');
@@ -388,7 +389,7 @@ function renderAlertas($alertas) {
             console.error('Error al cambiar de página:', error);
             container.innerHTML = `
                 <div class="error-mensaje">
-                    <p>Error al cargar las alertas. Por favor, intente de nuevo.</p>
+                    <p>Error al cargar las alertas. Por favor, intente de nuevo. </p>
                     <button onclick="cambiarPagina('${tipo}', ${pagina})">Reintentar</button>
                 </div>`;
         } finally {

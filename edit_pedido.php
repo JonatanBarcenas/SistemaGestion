@@ -18,22 +18,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fecha_entrega = $_POST['fecha-entrega'];
         $prioridad_id = $_POST['prioridad'];
         $usuario_id = $_POST['responsable-id'];
+        $estado_id = $_POST['estado'];
         
         $sql = "UPDATE pedido SET 
                 titulo = ?,
                 descripcion = ?,
                 fecha_entrega = ?,
                 prioridad_id = ?,
-                usuario_id = ?
+                usuario_id = ?,
+                estado_id = ?
                 WHERE id_pedido = ?";
                 
         $stmt = $cnn->prepare($sql);
-        $stmt->bind_param("sssiii", 
+        $stmt->bind_param("sssiiii", 
             $titulo, 
             $descripcion, 
             $fecha_entrega,
             $prioridad_id,
             $usuario_id,
+            $estado_id,
             $id_pedido
         );
         
