@@ -20,7 +20,7 @@ try {
     // Get and validate parameters
     $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
     $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-    $limite = 4; // Alertas por página
+    $limite = 2; // Alertas por página
 
     // Validate alert type
     if (!in_array($tipo, ['atraso', 'fecha'])) {

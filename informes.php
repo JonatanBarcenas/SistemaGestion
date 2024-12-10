@@ -36,11 +36,12 @@ function getDashboardData($cnn) {
     // 2. Informe por Estado
     $sql = "SELECT 
             e.nombre as estado,
+            e.color,
             COUNT(*) as cantidad,
             GROUP_CONCAT(p.titulo) as pedidos
             FROM pedido p
             JOIN estado e ON p.estado_id = e.id_estado
-            GROUP BY e.id_estado";
+            GROUP BY e.id_estado, e.nombre, e.color";
     $result = $cnn->query($sql);
     $data['por_estado'] = [];
     while($row = $result->fetch_assoc()) {
@@ -128,24 +129,6 @@ function getDashboardData($cnn) {
         $data['tendencias'][] = $row;
     }
 
-    // Comparativa de períodos (mes actual vs mes anterior)
-    $sql = "SELECT 
-            CASE 
-                WHEN fecha_creacion >= DATE_FORMAT(NOW() ,'%Y-%m-01') THEN 'Mes Actual'
-                WHEN fecha_creacion >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH) ,'%Y-%m-01') THEN 'Mes Anterior'
-            END as periodo,
-            COUNT(*) as total_pedidos,
-            AVG(DATEDIFF(fecha_entrega, fecha_creacion)) as tiempo_promedio,
-            SUM(CASE WHEN fecha_entrega < CURDATE() THEN 1 ELSE 0 END) as retrasados
-            FROM pedido
-            WHERE fecha_creacion >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH) ,'%Y-%m-01')
-            GROUP BY periodo";
-    $result = $cnn->query($sql);
-    $data['comparativa_periodos'] = [];
-    while($row = $result->fetch_assoc()) {
-        $data['comparativa_periodos'][] = $row;
-    }
-
     return $data;
 }
 
@@ -159,8 +142,6 @@ $dashboardData = getDashboardData($cnn);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informes - Sistema de Gestión</title>
     <link rel="stylesheet" href="css/informes.css">
-    <!-- Recharts para gráficos -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.1.2/recharts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -184,6 +165,7 @@ $dashboardData = getDashboardData($cnn);
             </div>
         </div>
 
+        <!-- Main content -->
         <main class="main-content">
             <header class="header">
                 <h1>Panel de Informes</h1>
@@ -208,7 +190,7 @@ $dashboardData = getDashboardData($cnn);
 
             <!-- Contenido de las pestañas -->
             <div class="tab-content">
-                <!-- Pestaña de Rendimiento -->
+                <!-- 1. Pestaña de Rendimiento -->
                 <div id="rendimiento" class="tab-pane active">
                     <div class="dashboard-grid">
                         <!-- KPIs de Rendimiento -->
@@ -230,15 +212,17 @@ $dashboardData = getDashboardData($cnn);
                             </div>
                         </div>
 
-                        <!-- Gráfico de Completación por Período -->
+                        <!-- Gráfico de Completación -->
                         <div class="dashboard-card">
                             <h3>Completación por Período</h3>
-                            <div id="completacionChart" class="chart-container"></div>
+                            <div class="chart-container">
+                                <canvas id="completacionChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Pestaña de Estados -->
+                <!-- 2. Pestaña de Estados -->
                 <div id="estados" class="tab-pane">
                     <div class="dashboard-grid">
                         <!-- Tabla de Estados -->
@@ -256,6 +240,7 @@ $dashboardData = getDashboardData($cnn);
                                     </thead>
                                     <tbody>
                                         <?php foreach($dashboardData['por_estado'] as $estado): 
+                                            $estadoClase = strtolower(str_replace(' ', '-', $estado['estado']));
                                             $retrasados = 0;
                                             foreach($dashboardData['retrasados_estado'] as $retrasado) {
                                                 if($retrasado['estado'] === $estado['estado']) {
@@ -263,15 +248,23 @@ $dashboardData = getDashboardData($cnn);
                                                     break;
                                                 }
                                             }
+                                            $porcentaje = ($estado['cantidad'] / array_sum(array_column($dashboardData['por_estado'], 'cantidad'))) * 100;
                                         ?>
                                             <tr>
-                                                <td><?php echo $estado['estado']; ?></td>
+                                                <td>
+                                                    <span class="estado-badge" style="background-color: <?php echo $estado['color']; ?>">
+                                                        <?php echo $estado['estado']; ?>
+                                                    </span>
+                                                </td>
                                                 <td><?php echo $estado['cantidad']; ?></td>
                                                 <td class="warning"><?php echo $retrasados; ?></td>
                                                 <td>
                                                     <div class="progress-bar">
-                                                        <div class="progress" style="width: <?php echo ($estado['cantidad'] / array_sum(array_column($dashboardData['por_estado'], 'cantidad'))) * 100; ?>%"></div>
+                                                        <div class="progress" 
+                                                             style="width: <?php echo $porcentaje; ?>%; background-color: <?php echo $estado['color']; ?>">
+                                                        </div>
                                                     </div>
+                                                    <span class="porcentaje-texto"><?php echo round($porcentaje, 1); ?>%</span>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -283,14 +276,16 @@ $dashboardData = getDashboardData($cnn);
                         <!-- Gráfico de Estados -->
                         <div class="dashboard-card">
                             <h3>Distribución Visual de Estados</h3>
-                            <div id="estadosChart" class="chart-container"></div>
+                            <div class="chart-container">
+                                <canvas id="estadosChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                 <!-- Pestaña de Clientes -->
-                 <div id="clientes" class="tab-pane">
+                <!-- 3. Pestaña de Clientes -->
+                <div id="clientes" class="tab-pane">
                     <div class="dashboard-grid">
+                        <!-- Resumen por Cliente -->
                         <div class="dashboard-card full-width">
                             <h3>Resumen por Cliente</h3>
                             <div class="table-responsive">
@@ -319,23 +314,6 @@ $dashboardData = getDashboardData($cnn);
                             </div>
                         </div>
 
-                        <div class="dashboard-card">
-                            <h3>Historial de Pedidos por Cliente</h3>
-                            <select id="clienteSelect" class="form-control">
-                                <?php 
-                                $clientes_unicos = array_unique(array_column($dashboardData['historial_cliente'], 'cliente'));
-                                foreach($clientes_unicos as $cliente): 
-                                ?>
-                                    <option value="<?php echo $cliente; ?>"><?php echo $cliente; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <div id="historialPedidos" class="table-responsive">
-                                <!-- Se llenará con JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                         <!-- Historial de Pedidos -->
                         <div class="dashboard-card">
                             <h3>Historial de Pedidos por Cliente</h3>
@@ -354,38 +332,48 @@ $dashboardData = getDashboardData($cnn);
                     </div>
                 </div>
 
-                <!-- Pestaña Temporal -->
+                <!-- 4. Pestaña Temporal -->
                 <div id="temporal" class="tab-pane">
                     <div class="dashboard-grid">
                         <!-- Tendencias -->
                         <div class="dashboard-card">
                             <h3>Tendencias de Carga de Trabajo</h3>
-                            <div id="tendenciasChart" class="chart-container"></div>
+                            <div class="chart-container">
+                                <canvas id="tendenciasChart"></canvas>
+                            </div>
                         </div>
 
-                        <!-- Comparativa de Períodos -->
+                        <!-- Estadísticas por Semana -->
                         <div class="dashboard-card">
-                            <h3>Comparativa de Períodos</h3>
-                            <div class="comparativa-grid">
-                                <?php foreach($dashboardData['comparativa_periodos'] as $periodo): ?>
-                                    <div class="periodo-card">
-                                        <h4><?php echo $periodo['periodo']; ?></h4>
-                                        <div class="periodo-stats">
-                                            <div class="stat-item">
-                                                <span class="stat-label">Total Pedidos</span>
-                                                <span class="stat-value"><?php echo $periodo['total_pedidos']; ?></span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-label">Tiempo Promedio</span>
-                                                <span class="stat-value"><?php echo round($periodo['tiempo_promedio'], 1); ?> días</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-label">Retrasados</span>
-                                                <span class="stat-value warning"><?php echo $periodo['retrasados']; ?></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
+                            <h3>Estadísticas Semanales</h3>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Semana</th>
+                                            <th>Total Pedidos</th>
+                                            <th>Retrasados</th>
+                                            <th>Tasa de Éxito</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach($dashboardData['por_semana'] as $semana): 
+                                            $tasa_exito = ($semana['total_pedidos'] - $semana['retrasados']) / $semana['total_pedidos'] * 100;
+                                        ?>
+                                            <tr>
+                                                <td>Semana <?php echo date('W', strtotime($semana['semana'] . ' +0 day')); ?></td>
+                                                <td><?php echo $semana['total_pedidos']; ?></td>
+                                                <td class="warning"><?php echo $semana['retrasados']; ?></td>
+                                                <td>
+                                                    <div class="progress-bar">
+                                                        <div class="progress" style="width: <?php echo $tasa_exito; ?>%"></div>
+                                                    </div>
+                                                    <?php echo round($tasa_exito, 1); ?>%
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -404,6 +392,10 @@ $dashboardData = getDashboardData($cnn);
         </main>
     </div>
 
+    <script>
+        // Pasar los datos de PHP a JavaScript
+        const dashboardData = <?php echo json_encode($dashboardData); ?>;
+    </script>
     <script src="js/informes.js"></script>
 </body>
 </html>
