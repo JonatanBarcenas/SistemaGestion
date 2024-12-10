@@ -211,6 +211,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    
+    
     // Exportar informe
     async function exportarInforme(tipo) {
         try {

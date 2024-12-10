@@ -445,10 +445,10 @@ $dashboardData = getDashboardData($cnn);
 
             <!-- Botones de exportación -->
             <div class="export-buttons">
-                <button onclick="exportarInforme('pdf')" class="btn-export pdf">
+                <button style="display: none;" onclick="exportarInforme('pdf')" class="btn-export pdf">
                     <i class="fas fa-file-pdf"></i> Exportar a PDF
                 </button>
-                <button onclick="exportarInforme('excel')" class="btn-export excel">
+                <button onclick="exportarInformes('excel')" class="btn-export excel">
                     <i class="fas fa-file-excel"></i> Exportar a Excel
                 </button>
             </div>
@@ -458,6 +458,15 @@ $dashboardData = getDashboardData($cnn);
     <script>
         // Pasar los datos de PHP a JavaScript
         const dashboardData = <?php echo json_encode($dashboardData); ?>;
+        
+        async function exportarInformes(tipo) {
+    try {
+        window.location.href = `informes/exportar_informe.php?tipo=${tipo}`;
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al exportar el informe');
+    }
+}
 
         function mostrarModalProyecto() {
             document.getElementById('modal-proyecto').classList.add('active');
