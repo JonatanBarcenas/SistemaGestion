@@ -238,6 +238,9 @@ try {
                     <?php endforeach; ?>
                 </div>
             </div>
+            <div class="logout-container">
+                <button class="logout-btn" onclick="location.href='logout.php'">Cerrar Sesión</button>
+            </div>
         </div>
 
         <!-- Main content -->
