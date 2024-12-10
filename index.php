@@ -7,12 +7,14 @@ include 'conexion.php';
 try {
     $cnn = conectar();
 
-    $sql = "SELECT 
+        $sql = "SELECT 
             p.id_pedido,
             p.titulo AS nombre_tarea,
             u.nombre AS responsable,
             DATE_FORMAT(p.fecha_entrega, '%d - %M') AS fecha_entrega,
             pr.nivel AS prioridad,
+            e.nombre AS estado,
+            e.color AS estado_color,
             p.usuario_id,
             p.estado_id,
             p.prioridad_id,
@@ -20,6 +22,7 @@ try {
         FROM pedido p
         INNER JOIN usuario u ON p.usuario_id = u.id_usuario
         INNER JOIN prioridad pr ON p.prioridad_id = pr.id_prioridad
+        INNER JOIN estado e ON p.estado_id = e.id_estado
         WHERE 1";
 
     $consult = $cnn->query($sql);
@@ -28,6 +31,8 @@ try {
     while($resultados = $consult->fetch_array(MYSQLI_ASSOC)){
         $clasePrioridad = "medium-priority";
         $prioridad = $resultados['prioridad'];
+
+
         if ($prioridad == 'Alta') {
             $clasePrioridad = 'high-priority';
         }
@@ -37,25 +42,55 @@ try {
         if ($prioridad == 'Baja') {
             $clasePrioridad = 'low-priority';
         }
+    
+        $claseEstado = "amarillo";
+        $estado = $resultados['estado'];
+
+        if ($estado == 'Pendiente') {
+            $claseEstado = 'amarillo';
+        }
+
+        if ($estado == 'En Proceso') {
+            $claseEstado = 'azul';
+        }
+
+        if ($estado == 'Completado') {
+            $claseEstado = 'verde';
+        }
+
+        if ($estado == 'Cancelado') {
+            $claseEstado = 'rojo';
+        }
+
+        if ($estado == 'Aplazado') {
+            $claseEstado = 'gris';
+        }
+       
+        
         $tabla .= " <tr>
                         <td>".$resultados['nombre_tarea']."</td>
                         <td>".$resultados['responsable']."</td>
                         <td>".$resultados['fecha_entrega']."</td>
-                        <td> 
-                            <button class='".$clasePrioridad."'>
-                                ".$prioridad."
-                            </button>
-                        </td>
                         <td>
-                            <button onclick='editarPedido(".$resultados['id_pedido'].")' class='btn-editar'>
-                                ✏️
-                            </button>
-                            <button onclick='eliminarPedido(".$resultados['id_pedido'].")' class='btn-eliminar'>
-                                🗑️
+                            <button class='".$claseEstado."'>
+                                ".$resultados['estado']."
                             </button>
                         </td>
-                    </tr>";
-    }
+                        <td> 
+                        <button class='".$clasePrioridad."'>
+                            ".$prioridad."
+                        </button>
+                    </td>
+                    <td>
+                        <button onclick='editarPedido(".$resultados['id_pedido'].")' class='btn-editar'>
+                            ✏️
+                        </button>
+                        <button onclick='eliminarPedido(".$resultados['id_pedido'].")' class='btn-eliminar'>
+                            🗑️
+                        </button>
+                    </td>
+                </tr>";
+}
 
 } catch (PDOException $e) {
     echo "Error en la conexión: " . $e->getMessage();
@@ -90,10 +125,21 @@ try {
                 
                 <div class="form-group">
                     <label for="prioridad"><span class="icon">🔥</span> Prioridad</label>
-                    <select name="prioridad" id="prioridad" required>
+                    <select class='combo' name="prioridad" id="prioridad" required>
                         <option value="1">Baja</option>
                         <option value="2">Media</option>
                         <option value="3">Alta</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estado"><span class="icon">🔄</span> Estado</label>
+                    <select class='combo' name="estado" id="estado" required>
+                        <option value="1">Pendiente</option>
+                        <option value="2">En Proceso</option>
+                        <option value="3">Completado</option>
+                        <option value="4">Cancelado</option>
+                        <option value="5">Aplazado</option>
                     </select>
                 </div>
 
@@ -136,15 +182,16 @@ try {
                 <h2>PROYECTO 1</h2>
                 <button id="add-task" class="add-task">Agregar Tarea +</button>
                 <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th>Nombre de la tarea</th>
-                            <th>Responsable</th>
-                            <th>Fecha de entrega</th>
-                            <th>Prioridad</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
+                <thead>
+                    <tr>
+                        <th>Nombre de la tarea</th>
+                        <th>Responsable</th>
+                        <th>Fecha de entrega</th>
+                        <th>Estado</th>
+                        <th>Prioridad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
                     <tbody>
                         <?php echo $tabla; ?>
                     </tbody>

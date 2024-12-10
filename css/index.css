@@ -179,6 +179,16 @@ body {
     color: #ffffff;
 }
 
+.prueba{
+    border: none;
+    width: 70px;
+    height: 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #d9d900;
+    color: #ffffff;
+}
+
 .high-priority {
     border: none;
     width: 70px;
@@ -234,6 +244,16 @@ label {
     display: block;
     margin-bottom: 5px;
     color: #fff;
+}
+
+.combo{
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
 }
 
 input, textarea {
@@ -309,4 +329,60 @@ textarea {
 
 .autocomplete-results li:hover {
     background-color: #181818;
+}
+
+/* Add to css/index.css */
+.amarillo {
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    background-color: #c8ff00;
+    color: #ffffff;
+    min-width: 100px;
+}
+
+.azul {
+    background-color: #1E90FF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.verde {
+    background-color: #32CD32;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.rojo {
+    background-color: #FF4444;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.gris {
+    background-color: #808080;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
 }

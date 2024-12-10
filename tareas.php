@@ -4,6 +4,32 @@ checkLogin();
 include 'conexion.php';
 include 'check_alerts.php';
 
+// Function to update task state
+function updateTaskState($pedido_id, $estado_id) {
+    try {
+        $cnn = conectar();
+        $sql = "UPDATE pedido SET estado_id = ? WHERE id_pedido = ?";
+        $stmt = $cnn->prepare($sql);
+        $stmt->bind_param("ii", $estado_id, $pedido_id);
+        
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            throw new Exception('Error al actualizar el estado');
+        }
+    } catch (Exception $e) {
+        echo "<script>alert('".$e->getMessage()."');</script>";
+        return false;
+    }
+}
+
+// Handle state update request
+if (isset($_GET['update_estado']) && isset($_GET['pedido_id']) && isset($_GET['estado_id'])) {
+    updateTaskState((int)$_GET['pedido_id'], (int)$_GET['estado_id']);
+    header("Location: tareas.php");
+    exit;
+}
+
 // Configuración inicial de paginación
 $pagina_vencidas = isset($_GET['pagina']) && $_GET['tipo'] === 'atraso' ? (int)$_GET['pagina'] : 1;
 $pagina_proximas = isset($_GET['pagina']) && $_GET['tipo'] === 'fecha' ? (int)$_GET['pagina'] : 1;
@@ -36,10 +62,11 @@ $alertas_proximas = getAlertas('fecha', $offset_proximas, $limite);
 try {
     $cnn = conectar();
     // Obtener tareas del usuario
-    $sql = "SELECT p.titulo AS nombre_tarea, p.id_pedido, pr.nivel AS prioridad
+    $sql = "SELECT p.titulo AS nombre_tarea, p.id_pedido, pr.nivel AS prioridad, e.nombre AS estado, e.color AS estado_color
             FROM pedido p
             INNER JOIN usuario u ON p.usuario_id = u.id_usuario
             INNER JOIN prioridad pr ON p.prioridad_id = pr.id_prioridad
+            INNER JOIN estado e ON p.estado_id = e.id_estado
             WHERE p.usuario_id = ?";
     
     $stmt = $cnn->prepare($sql);
@@ -113,19 +140,33 @@ function renderAlertas($alertas) {
                     <h3>Tus tareas</h3>
                     <ul id="task-list">
                         <?php foreach ($tareas as $tarea): ?>
-                            <li data-id="<?= $tarea['id_pedido'] ?>"><?= $tarea['nombre_tarea'] ?></li>
+                            <li data-id="<?= $tarea['id_pedido'] ?>" onclick="loadTaskDetails(<?= $tarea['id_pedido'] ?>)"><?= $tarea['nombre_tarea'] ?></li>
                         <?php endforeach; ?>
                     </ul>
                 </div>
                 <div class="task-details" id="task-details">
-                    <h2 id="task-title">Selecciona una tarea</h2>
-                    <div id="tarea" class="tarea">
-                        <div class="info"><span>Responsable:</span> <span id="responsable">-</span></div>
-                        <div class="info"><span>Fecha de entrega:</span> <span id="fecha-entrega">-</span></div>
-                        <div class="info"><span>Proyecto:</span> <span id="proyecto">Proyecto 1</span></div>
-                        <div class="description" id="task-description"></div>
+                <h2 id="task-title">Selecciona una tarea</h2>
+                <div id="tarea" class="tarea">
+                    <div class="info"><span>Responsable:</span> <span id="responsable">-</span></div>
+                    <div class="info"><span>Fecha de entrega:</span> <span id="fecha-entrega">-</span></div>
+                    <div class="info"><span>Proyecto:</span> <span id="proyecto">Proyecto 1</span></div>
+                    <div class="info">
+                        <span>Estado:</span>
+                        <form method="GET" action="tareas.php">
+                            <input type="hidden" name="pedido_id" id="pedido_id">
+                            <select name="estado_id" id="estado" onchange="this.form.submit()">
+                                <option value="1">Pendiente</option>
+                                <option value="2">En Proceso</option>
+                                <option value="3">Completado</option>
+                                <option value="4">Cancelado</option>
+                                <option value="5">Aplazado</option>
+                            </select>
+                            <input type="hidden" name="update_estado" value="true">
+                        </form>
                     </div>
+                    <div class="description" id="task-description"></div>
                 </div>
+            </div>
             </section>
 
             <!-- Alerts Section -->
@@ -173,6 +214,7 @@ function renderAlertas($alertas) {
 
     <script>
     // Manejo de tareas
+    let currentTaskId = null;
     const taskList = document.getElementById("task-list");
     const taskDetails = document.getElementById("task-details");
 
@@ -184,23 +226,26 @@ function renderAlertas($alertas) {
     });
 
     async function loadTaskDetails(taskId) {
-        try {
-            const response = await fetch(`get_task_details.php?id=${taskId}`);
-            const data = await response.json();
-            
-            if (data) {
-                document.getElementById("task-title").textContent = data.nombre_tarea;
-                document.getElementById("responsable").textContent = data.responsable;
-                document.getElementById("fecha-entrega").textContent = data.fecha_entrega;
-                document.getElementById("task-description").textContent = data.descripcion;
+    try {
+        currentTaskId = taskId;
+        const response = await fetch(`get_task_details.php?id=${taskId}`);
+        const data = await response.json();
+        
+        if (data) {
+            document.getElementById("task-title").textContent = data.nombre_tarea;
+            document.getElementById("responsable").textContent = data.responsable;
+            document.getElementById("fecha-entrega").textContent = data.fecha_entrega;
+            document.getElementById("task-description").textContent = data.descripcion;
+            document.getElementById("estado").value = data.estado_id;
+            document.getElementById("pedido_id").value = taskId;
 
-                taskDetails.style.display = "block";
-                document.getElementById("tarea").style.display = "block";
-            }
-        } catch (error) {
-            console.error("Error al cargar los detalles de la tarea:", error);
+            taskDetails.style.display = "block";
+            document.getElementById("tarea").style.display = "block";
         }
+    } catch (error) {
+        console.error("Error al cargar los detalles de la tarea:", error);
     }
+}
 
     async function cambiarPagina(tipo, pagina) {
         const contenedor = tipo === 'atraso' ? 'alertas-vencidos' : 'alertas-proximos';
