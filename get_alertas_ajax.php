@@ -12,11 +12,9 @@ require_once 'conexion.php';
 require_once 'check_alerts.php';
 
 try {
-    // Check session
-    if (!isset($_SESSION['usuario_id'])) {
-        //throw new Exception('Sesión no válida');
-        $_SESSION['usuario_id'] = 1;
-    }
+    
+    $_SESSION['usuario_id'] = $_GET['id'];
+    
 
     // Get and validate parameters
     $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';

@@ -1,49 +1,27 @@
 <?php
 require_once 'config/session_config.php';
-checkLogin();
-include 'conexion.php';
+require_once 'model/Proyecto.php';
+require_once 'model/Usuario.php';
+require_once 'model/Alerta.php';
+require_once 'model/Pedido.php';
+require_once 'model/Cliente.php';
 include 'check_alerts.php';
 
-$cnn = conectar();
+checkLogin();
 
-// Obtener el proyecto_id de la URL o usar un valor predeterminado
-$proyecto_id = isset($_GET['proyecto_id']) ? $_GET['proyecto_id'] : 1;
+$proyecto_id = isset($_GET['proyecto_id']) ? (int)$_GET['proyecto_id'] : 1;
 
-// Obtener información del proyecto actual
-$sql_proyecto_actual = "SELECT nombre FROM proyecto WHERE id_proyecto = ?";
-$stmt = $cnn->prepare($sql_proyecto_actual);
-$stmt->bind_param("i", $proyecto_id);
-$stmt->execute();
-$proyecto_actual = $stmt->get_result()->fetch_assoc();
+$proyectoActual = Proyecto::findById($proyecto_id);
 
-$sql_usuarios = "SELECT id_usuario, nombre FROM usuario ORDER BY nombre";
-$result_usuarios = $cnn->query($sql_usuarios);
-$usuarios = [];
-while($usuario = $result_usuarios->fetch_assoc()) {
-    $usuarios[] = $usuario;
-}
+$usuarios = Usuario::findAll();
 
-// Obtener lista de proyectos
-$sql_proyectos = "SELECT id_proyecto, nombre, estado_id FROM proyecto ORDER BY fecha_inicio DESC";
-$result_proyectos = $cnn->query($sql_proyectos);
-$proyectos = [];
-while($proyecto = $result_proyectos->fetch_assoc()) {
-    $proyectos[] = $proyecto;
-}
+$proyectos = Proyecto::findAll();
 
-// Function to update task state
+
 function updateTaskState($pedido_id, $estado_id) {
     try {
-        $cnn = conectar();
-        $sql = "UPDATE pedido SET estado_id = ? WHERE id_pedido = ?";
-        $stmt = $cnn->prepare($sql);
-        $stmt->bind_param("ii", $estado_id, $pedido_id);
-        
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            throw new Exception('Error al actualizar el estado');
-        }
+        Pedido::updateEstado($pedido_id, $estado_id);
+        return true;
     } catch (Exception $e) {
         echo "<script>alert('".$e->getMessage()."');</script>";
         return false;
@@ -62,20 +40,9 @@ $pagina_vencidas = isset($_GET['pagina']) && $_GET['tipo'] === 'atraso' ? (int)$
 $pagina_proximas = isset($_GET['pagina']) && $_GET['tipo'] === 'fecha' ? (int)$_GET['pagina'] : 1;
 $limite = 2;
 
-
-function getTotalAlertas($tipo) {
-    $cnn = conectar();
-    $sql = "SELECT COUNT(*) as total FROM alerta WHERE estado = 'no_leida' AND tipo = ?";
-    $stmt = $cnn->prepare($sql);
-    $stmt->bind_param("s", $tipo);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return $result->fetch_assoc()['total'];
-}
-
 // Obtener totales y calcular páginas
-$total_vencidas = getTotalAlertas('atraso');
-$total_proximas = getTotalAlertas('fecha');
+$total_vencidas = Alerta::countByType('atraso');
+$total_proximas = Alerta::countByType('fecha');
 $total_paginas_vencidas = ceil($total_vencidas / $limite);
 $total_paginas_proximas = ceil($total_proximas / $limite);
 
@@ -84,39 +51,18 @@ $offset_vencidas = ($pagina_vencidas - 1) * $limite;
 $offset_proximas = ($pagina_proximas - 1) * $limite;
 
 // Obtener alertas iniciales
-$alertas_vencidas = getAlertas('atraso', $offset_vencidas, $limite);
-$alertas_proximas = getAlertas('fecha', $offset_proximas, $limite);
+$alertas_vencidas = Alerta::findByType('atraso', $offset_vencidas, $limite);
+$alertas_proximas = Alerta::findByType('fecha', $offset_proximas, $limite);
 
-try {
-    $cnn = conectar();
-    // Obtener tareas del usuario
-    $sql = "SELECT p.titulo AS nombre_tarea, p.id_pedido, pr.nivel AS prioridad, e.nombre AS estado, e.color AS estado_color
-            FROM pedido p
-            INNER JOIN usuario u ON p.usuario_id = u.id_usuario
-            INNER JOIN prioridad pr ON p.prioridad_id = pr.id_prioridad
-            INNER JOIN estado e ON p.estado_id = e.id_estado
-            WHERE p.usuario_id = ?";
-    
-    $stmt = $cnn->prepare($sql);
-    $stmt->bind_param("i", $_SESSION['usuario_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
+// Obtener tareas del usuario
+$tareas = Pedido::findByUsuarioId($_SESSION['usuario_id']);
 
-    $tareas = [];
-    while ($row = $result->fetch_assoc()) {
-        $tareas[] = $row;
-    }
-
-    checkDates();
-    
-} catch (PDOException $e) {
-    error_log("Error en la conexión: " . $e->getMessage());
-    $tareas = [];
-}
+// Verificar fechas y alertas
+checkDates();
 
 function renderAlertas($alertas) {
     $html = '';
-    foreach($alertas as $alerta) {
+    foreach ($alertas as $alerta) {
         $html .= "<div class='alerta {$alerta['tipo']}'>
                     <p>{$alerta['mensaje']}</p>
                     <button class='leer-btn' onclick='marcarLeida({$alerta['id_alerta']})'>Marcar como leída</button>
@@ -145,11 +91,16 @@ function renderAlertas($alertas) {
                     <label for="cliente_proyecto"><span class="icon">🏢</span> Cliente</label>
                     <select class="combo" name="cliente_id" id="cliente_proyecto" required>
                         <?php
-                        $sql_clientes = "SELECT id_cliente, nombre FROM cliente ORDER BY nombre";
-                        $result_clientes = $cnn->query($sql_clientes);
-                        while($cliente = $result_clientes->fetch_assoc()) {
-                            echo "<option value='".$cliente['id_cliente']."'>".$cliente['nombre']."</option>";
-                        }
+                       $result_clientes = Cliente::getAllOrderByName();
+
+                       // Recorrer el vector de clientes
+                    //    foreach ($result_clientes as $cliente) {
+                    //        echo "ID: " . $cliente->id_cliente . " - Nombre: " . $cliente->nombre . "<br>";
+                    //    }
+                        echo "<pre>";
+                        echo var_dump($result_clientes);
+                        echo "</pre>";
+                        
                         ?>
                     </select>
                 </div>
@@ -326,14 +277,14 @@ function renderAlertas($alertas) {
         container.style.opacity = '0.5';
         
         try {
-            const response = await fetch(`get_alertas_ajax.php?tipo=${tipo}&pagina=${pagina}`);
+            const response = await fetch(`get_alertas_ajax.php?tipo=${tipo}&pagina=${pagina}&id=${<?php echo $_SESSION['usuario_id']; ?>}`);
             console.log("response "+response);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
-            consolo.log("data "+data);
+            console.log("data "+data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Error desconocido');

@@ -1,30 +1,29 @@
 <?php
-//login.php
+// login.php
 require_once 'config/session_config.php';
+require_once 'conexion.php';
+require_once 'model/Usuario.php';
+
 initSession();
 
-include 'conexion.php'; 
 $error = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $usuario = $_POST['usuario'];
     $password = $_POST['password'];
 
     try {
+        // Establecer conexión
         $cnn = conectar();
-        
-        $sql = "SELECT id_usuario, nombre, password FROM usuario WHERE email = ?";
-        $stmt = $cnn->prepare($sql);
-        $stmt->bind_param("s", $usuario);
-        $stmt->execute();
-        $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
-            
-            // if (password_verify($password, $user['password'])) {
-            if ($password == $user['password']) {
-                $_SESSION['usuario_id'] = $user['id_usuario'];
-                $_SESSION['usuario_nombre'] = $user['nombre'];
+        // Crear una instancia de Usuario y buscar por email
+        $user = new Usuario();
+        $userData = $user->findByEmail($cnn, $usuario);
+
+        if ($userData) {
+            // Verificar contraseña
+            if ($password == $userData->verifyPassword($cnn, $password)) { 
+                $_SESSION['usuario_id'] = $userData->getId();
+                $_SESSION['usuario_nombre'] = $userData->getNombre();
 
                 header("Location: index.php");
                 exit();
@@ -34,12 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $error = "Usuario no encontrado.";
         }
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         $error = "Error en la conexión: " . $e->getMessage();
     }
 }
 ?>
-
 
 
 <!DOCTYPE html>
