@@ -2,123 +2,59 @@
 require_once 'config/session_config.php';
 checkLogin();
 
-include 'conexion.php';
+require_once 'conexion.php';
+require_once 'model/Proyecto.php';
+require_once 'model/Pedido.php';
+
+$cnn = conectar();
+$proyectoManager = new Proyecto();
+$pedidoManager = new Pedido();
 
 try {
-    $cnn = conectar();
-
-    // Obtener el proyecto_id de la URL o usar un valor predeterminado
-    $proyecto_id = isset($_GET['proyecto_id']) ? $_GET['proyecto_id'] : 1;
+    $proyectoId = isset($_GET['proyecto_id']) ? $_GET['proyecto_id'] : 1;
 
     // Obtener información del proyecto actual
-    $sql_proyecto_actual = "SELECT nombre, cliente_id FROM proyecto WHERE id_proyecto = ?";
-    $stmt = $cnn->prepare($sql_proyecto_actual);
-    $stmt->bind_param("i", $proyecto_id);
-    $stmt->execute();
-    $proyecto_actual = $stmt->get_result()->fetch_assoc();
-    $cliente_id = $proyecto_actual['cliente_id'];
-    
-    $sql_usuarios = "SELECT id_usuario, nombre FROM usuario ORDER BY nombre";
-    $result_usuarios = $cnn->query($sql_usuarios);
-    $usuarios = [];
-    while($usuario = $result_usuarios->fetch_assoc()) {
-        $usuarios[] = $usuario;
-    }
+    $proyectoActual = $proyectoManager->getProyectoActual($proyectoId);
+    $clienteId = $proyectoActual['cliente_id'];
 
     // Obtener lista de proyectos
-    $sql_proyectos = "SELECT id_proyecto, nombre, estado_id FROM proyecto ORDER BY fecha_inicio DESC";
-    $result_proyectos = $cnn->query($sql_proyectos);
-    $proyectos = [];
-    while($proyecto = $result_proyectos->fetch_assoc()) {
-        $proyectos[] = $proyecto;
+    $proyectos = $proyectoManager->getListaProyectos();
+
+    // Obtener pedidos del proyecto actual
+    $pedidos = $pedidoManager->getPedidosByProyecto($proyectoId);
+
+    // Renderizar la tabla
+    $tabla = '';
+    foreach ($pedidos as $pedido) {
+        $clasePrioridad = $pedido['prioridad'] === 'Alta' ? 'high-priority' :
+                          ($pedido['prioridad'] === 'Media' ? 'medium-priority' : 'low-priority');
+
+        $claseEstado = match ($pedido['estado']) {
+            'Pendiente' => 'amarillo',
+            'En Proceso' => 'azul',
+            'Completado' => 'verde',
+            'Cancelado' => 'rojo',
+            'Aplazado' => 'gris',
+            default => 'amarillo',
+        };
+
+        $tabla .= "
+            <tr>
+                <td>{$pedido['nombre_tarea']}</td>
+                <td>{$pedido['responsable']}</td>
+                <td>{$pedido['fecha_entrega']}</td>
+                <td><button class='$claseEstado'>{$pedido['estado']}</button></td>
+                <td><button class='$clasePrioridad'>{$pedido['prioridad']}</button></td>
+                <td>
+                    <button onclick='editarPedido({$pedido['id_pedido']})' class='btn-editar'>✏️</button>
+                    <button onclick='eliminarPedido({$pedido['id_pedido']})' class='btn-eliminar'>🗑️</button>
+                </td>
+            </tr>";
     }
-
-    // Consulta principal de pedidos
-    $sql = "SELECT 
-            p.id_pedido,
-            p.titulo AS nombre_tarea,
-            u.nombre AS responsable,
-            DATE_FORMAT(p.fecha_entrega, '%d - %M') AS fecha_entrega,
-            pr.nivel AS prioridad,
-            e.nombre AS estado,
-            e.color AS estado_color,
-            p.usuario_id,
-            p.estado_id,
-            p.prioridad_id,
-            p.cliente_id
-        FROM pedido p
-        INNER JOIN usuario u ON p.usuario_id = u.id_usuario
-        INNER JOIN prioridad pr ON p.prioridad_id = pr.id_prioridad
-        INNER JOIN estado e ON p.estado_id = e.id_estado
-        WHERE p.proyecto_id = ?";
-
-    $stmt = $cnn->prepare($sql);
-    $stmt->bind_param("i", $proyecto_id);
-    $stmt->execute();
-    $consult = $stmt->get_result();
-    
-    $tabla = "";
-    while($resultados = $consult->fetch_array(MYSQLI_ASSOC)){
-        $clasePrioridad = "medium-priority";
-        $prioridad = $resultados['prioridad'];
-
-        if ($prioridad == 'Alta') {
-            $clasePrioridad = 'high-priority';
-        }
-        if ($prioridad == 'Media') {
-            $clasePrioridad = 'medium-priority';
-        }
-        if ($prioridad == 'Baja') {
-            $clasePrioridad = 'low-priority';
-        }
-    
-        $claseEstado = "amarillo";
-        $estado = $resultados['estado'];
-
-        if ($estado == 'Pendiente') {
-            $claseEstado = 'amarillo';
-        }
-        if ($estado == 'En Proceso') {
-            $claseEstado = 'azul';
-        }
-        if ($estado == 'Completado') {
-            $claseEstado = 'verde';
-        }
-        if ($estado == 'Cancelado') {
-            $claseEstado = 'rojo';
-        }
-        if ($estado == 'Aplazado') {
-            $claseEstado = 'gris';
-        }
-        
-        $tabla .= " <tr>
-                        <td>".$resultados['nombre_tarea']."</td>
-                        <td>".$resultados['responsable']."</td>
-                        <td>".$resultados['fecha_entrega']."</td>
-                        <td>
-                            <button class='".$claseEstado."'>
-                                ".$resultados['estado']."
-                            </button>
-                        </td>
-                        <td> 
-                            <button class='".$clasePrioridad."'>
-                                ".$prioridad."
-                            </button>
-                        </td>
-                        <td>
-                            <button onclick='editarPedido(".$resultados['id_pedido'].")' class='btn-editar'>
-                                ✏️
-                            </button>
-                            <button onclick='eliminarPedido(".$resultados['id_pedido'].")' class='btn-eliminar'>
-                                🗑️
-                            </button>
-                        </td>
-                    </tr>";
-    }
-
-} catch (PDOException $e) {
-    echo "Error en la conexión: " . $e->getMessage();
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -250,7 +186,7 @@ try {
                 <div class="user-icon">👤 <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></div>
             </header>
             <section class="project-section">
-                <h2><?php echo htmlspecialchars($proyecto_actual['nombre']); ?></h2>
+                <h2><?php echo htmlspecialchars($proyectoActual['nombre']); ?></h2>
                 <button id="add-task" class="add-task">Agregar Tarea +</button>
                 <table class="tasks-table">
                     <thead>
