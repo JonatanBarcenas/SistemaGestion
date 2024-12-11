@@ -15,7 +15,7 @@ try {
     // Check session
     if (!isset($_SESSION['usuario_id'])) {
         //throw new Exception('Sesión no válida');
-        $_SESSION['usuario_id'] = 1;
+        $_SESSION['usuario_id'] = 2;
     }
 
     // Get and validate parameters
@@ -74,6 +74,7 @@ try {
 
 } catch (Exception $e) {
     // Send error response
+    error_log("Error en ". __FILE__." linea ".__LINE__." ERROR: ".$e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,

@@ -197,7 +197,10 @@ function renderAlertas($alertas) {
         <main class="main-content">
             <header class="header">
                 <input type="text" placeholder="Buscar" class="search-bar">
-                <div class="user-icon">👤 <?php echo $_SESSION['usuario_nombre']; ?></div>
+                <div class="user-icon">👤 <?php 
+                echo $_SESSION['usuario_nombre']; 
+                echo $_SESSION['usuario_id']; 
+                ?></div>
             </header>
 
             <!-- Tasks Section -->
@@ -333,7 +336,7 @@ function renderAlertas($alertas) {
             }
             
             const data = await response.json();
-            consolo.log("data "+data);
+            console.log("data "+data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Error desconocido');
