@@ -179,6 +179,16 @@ body {
     color: #ffffff;
 }
 
+.prueba{
+    border: none;
+    width: 70px;
+    height: 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #d9d900;
+    color: #ffffff;
+}
+
 .high-priority {
     border: none;
     width: 70px;
@@ -234,6 +244,16 @@ label {
     display: block;
     margin-bottom: 5px;
     color: #fff;
+}
+
+.combo{
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
 }
 
 input, textarea {
@@ -309,4 +329,229 @@ textarea {
 
 .autocomplete-results li:hover {
     background-color: #181818;
+}
+
+/* Add to css/index.css */
+.amarillo {
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    background-color: #c8ff00;
+    color: #ffffff;
+    min-width: 100px;
+}
+
+.azul {
+    background-color: #1E90FF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.verde {
+    background-color: #32CD32;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.rojo {
+    background-color: #FF4444;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.gris {
+    background-color: #808080;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.9em;
+    min-width: 100px;
+}
+
+.sidebar .menu li {
+    margin: 5px 0;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ccc;
+}
+
+.sidebar .menu li:hover {
+    background-color: #363636;
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.sidebar .menu li.active {
+    background-color: #404040;
+    color: #fff;
+}
+
+.sidebar h3 {
+    color: #808080;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 15px 15px;
+}
+
+.sidebar .projects {
+    margin-top: 20px;
+}
+
+.sidebar .projects .project {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sidebar .projects .project:hover {
+    background-color: #363636;
+    transform: translateX(5px);
+}
+
+.sidebar .projects .project .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 12px;
+    transition: transform 0.3s ease;
+}
+
+.sidebar .projects .project:hover .dot {
+    transform: scale(1.2);
+}
+
+.sidebar .projects .project span {
+    color: #ccc;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.sidebar .projects .project:hover span {
+    color: #fff;
+}
+
+.projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.add-project-btn {
+    background-color: #404040;
+    color: #ccc;
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.add-project-btn:hover {
+    background-color: #505050;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.alineacion{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#modal-proyecto .modal {
+    max-width: 500px;
+}
+
+.projects-list {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.project {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.project:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.add-project-btn {
+    background-color: #444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-project-btn:hover {
+    background-color: #555;
+}
+
+.logout-container {
+    position: bottom;
+    margin-top: auto;
+    text-align: center;
+}
+
+.logout-btn {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #cc0000;
 }
